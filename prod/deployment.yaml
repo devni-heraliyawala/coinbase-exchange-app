@@ -9,7 +9,7 @@ metadata:
   name: coursework-20200681-demo-deployment
   namespace: prod
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: coursework-20200681-demo
