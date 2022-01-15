@@ -27,6 +27,7 @@ phases:
       - echo Logging in to Docker Hub...
       - echo $DOCKER_PASSWORD | docker login --username devniindula --password-stdin 
       - REPOSITORY_URI=devniindula/$IMAGE_REPO_NAME
+      - echo $REPOSITORY_URI
       - docker pull $REPOSITORY_URI:$IMAGE_TAG
       
 

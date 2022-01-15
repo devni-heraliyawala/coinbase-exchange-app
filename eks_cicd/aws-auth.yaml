@@ -15,7 +15,6 @@ data:
       rolearn: arn:aws:iam::980464126151:role/eksctl-coursework-20200681-cluster-ServiceRole-2H7E7XDBY5J1
       username: eksctl-coursework-20200681-cluster-ServiceRole-2H7E7XDBY5J1
     - groups:
-    - groups:
       - system:masters
       rolearn: arn:aws:iam::980464126151:role/CodeBuildKubectlRole
       username: CodeBuildKubectlRole
