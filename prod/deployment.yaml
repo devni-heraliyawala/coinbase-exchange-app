@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/name: coursework-20200681-demo
+    app.kubernetes.io/instance: coursework-20200681-demo-instance
+    app.kubernetes.io/version: '1.0.0'
+    app.kubernetes.io/managed-by: kubectl
+  name: coursework-20200681-demo-deployment
+  namespace: prod
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: coursework-20200681-demo
+  template:
+    metadata:
+      labels:
+        app: coursework-20200681-demo
+    spec:
+      containers:
+        - image: devniindula/nodejs-coinbase-starter:1.0
+          imagePullPolicy: Always
+          name: coursework-20200681
+          ports:
+            - containerPort: 3000
