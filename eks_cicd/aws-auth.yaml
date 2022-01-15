@@ -1,0 +1,30 @@
+apiVersion: v1
+data:
+  mapRoles: |
+    - groups:
+      - system:bootstrappers
+      - system:nodes
+      rolearn: arn:aws:iam::980464126151:role/eksctl-coursework-20200681-nodegr-NodeInstanceRole-1XC0STDY5LMST
+      username: system:node:{{EC2PrivateDNSName}}
+    - groups:
+      - system:masters
+      rolearn: arn:aws:iam::980464126151:role/service-role/codebuild-cw-20200681-cicd-demo-service-role
+      username: codebuild-cw-20200681-cicd-demo-service-role
+    - groups:
+      - system:masters
+      rolearn: arn:aws:iam::980464126151:role/eksctl-coursework-20200681-cluster-ServiceRole-2H7E7XDBY5J1
+      username: eksctl-coursework-20200681-cluster-ServiceRole-2H7E7XDBY5J1
+    - groups:
+    - groups:
+      - system:masters
+      rolearn: arn:aws:iam::980464126151:role/CodeBuildKubectlRole
+      username: CodeBuildKubectlRole
+  mapUsers: |
+    []
+kind: ConfigMap
+metadata:
+  creationTimestamp: "2022-01-14T16:28:26Z"
+  name: aws-auth
+  namespace: kube-system
+  resourceVersion: "1537"
+  uid: 6dc44884-b970-4bb4-9f67-9ececcf4ad26
