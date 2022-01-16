@@ -25,8 +25,8 @@ phases:
       - echo check kubectl access
       - kubectl get svc
       - echo Logging in to Docker Hub...
-      - echo $DOCKER_PASSWORD | docker login --username devniindula --password-stdin 
-      - REPOSITORY_URI=devniindula/$IMAGE_REPOSITORY_NAME
+      - echo $DOCKER_PASSWORD | docker login --username $DOCKER_HUB_UNAME --password-stdin 
+      - REPOSITORY_URI=$DOCKER_HUB_UNAME/$IMAGE_REPOSITORY_NAME
       - echo $REPOSITORY_URI
       - docker pull $REPOSITORY_URI:$IMAGE_TAG
       
@@ -36,13 +36,13 @@ phases:
       - echo Build started on `date`
       - echo Building the Docker image...          
       - docker build --cache-from $REPOSITORY_URI:$IMAGE_TAG -t $IMAGE_REPOSITORY_NAME:$IMAGE_TAG .
-      - docker tag $IMAGE_REPOSITORY_NAME:$IMAGE_TAG devniindula/$IMAGE_REPOSITORY_NAME:$IMAGE_TAG 
+      - docker tag $IMAGE_REPOSITORY_NAME:$IMAGE_TAG $REPOSITORY_URI:$IMAGE_TAG 
 
   post_build:
     commands:
       - echo Build completed on `date`
       - echo Pushing the Docker image...
-      - docker push devniindula/$IMAGE_REPOSITORY_NAME:$IMAGE_TAG
+      - docker push $REPOSITORY_URI:$IMAGE_TAG
       - echo Push the latest image to cluster
-      - kubectl apply -f dev/deployment.yaml
-      - kubectl rollout restart -f dev/deployment.yaml
+      - kubectl apply -f $DEPLOYMENT_ENV/deployment.yaml
+      - kubectl rollout restart -f $DEPLOYMENT_ENV/deployment.yaml
