@@ -28,16 +28,17 @@ phases:
       - echo $DOCKER_PASSWORD | docker login --username $DOCKER_HUB_UNAME --password-stdin 
       - REPOSITORY_URI=$DOCKER_HUB_UNAME/$IMAGE_REPOSITORY_NAME
       - echo $REPOSITORY_URI
-      - echo $IMAGE_REPOSITORY_NAME-$DEPLOYMENT_ENV:$IMAGE_TAG
       - docker pull $REPOSITORY_URI:$IMAGE_TAG
       
 
   build:
     commands:
       - echo Build started on `date`
+      - LOCAL_IMAGE_TAG=$IMAGE_REPOSITORY_NAME-$DEPLOYMENT_ENV:$IMAGE_TAG
+      - echo local tag - $LOCAL_IMAGE_TAG
       - echo Building the Docker image...          
-      - docker build --cache-from $REPOSITORY_URI:$IMAGE_TAG -t $IMAGE_REPOSITORY_NAME:$IMAGE_TAG .
-      - docker tag $IMAGE_REPOSITORY_NAME:$IMAGE_TAG $REPOSITORY_URI:$IMAGE_TAG 
+      - docker build --cache-from $REPOSITORY_URI:$IMAGE_TAG -t $LOCAL_IMAGE_TAG .
+      - docker tag $LOCAL_IMAGE_TAG $REPOSITORY_URI:$IMAGE_TAG 
 
   post_build:
     commands:
