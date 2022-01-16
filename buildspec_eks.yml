@@ -28,6 +28,7 @@ phases:
       - echo $DOCKER_PASSWORD | docker login --username $DOCKER_HUB_UNAME --password-stdin 
       - REPOSITORY_URI=$DOCKER_HUB_UNAME/$IMAGE_REPOSITORY_NAME
       - echo $REPOSITORY_URI
+      - echo $IMAGE_REPOSITORY_NAME_$DEPLOYMENT_ENV:$IMAGE_TAG
       - docker pull $REPOSITORY_URI:$IMAGE_TAG
       
 
