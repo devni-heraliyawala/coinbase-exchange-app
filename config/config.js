@@ -28,7 +28,7 @@ module.exports = {
     multipleStatements: true,
   },
   mysql_configs_dev: {
-    host: "mysql.default.cluster.local",
+    host: "mysql.default.svc.cluster.local",
     user: "root",
     password: "Abcd1234",
     database: "coinbase_exchange_db_dev",
