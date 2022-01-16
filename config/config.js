@@ -20,11 +20,32 @@ module.exports = {
     passphrase: "hiw0ja4x8kp",
     useSandbox: true,
   },
-  mysql_configs: {
+  mysql_configs_aws: {
     host: "aws-database-instance-1.c1t6oa0bwghn.us-east-2.rds.amazonaws.com",
     user: "admin",
     password: "Abcd1234",
     database: "coinbase_exchange_db",
+    multipleStatements: true,
+  },
+  mysql_configs_dev: {
+    host: "mysql.default.svc.cluster.local:3306",
+    user: "admin",
+    password: "Abcd1234",
+    database: "coinbase_exchange_db_dev",
+    multipleStatements: true,
+  },
+  mysql_configs_test: {
+    host: "mysql.default.svc.cluster.local:3306",
+    user: "admin",
+    password: "Abcd1234",
+    database: "coinbase_exchange_db_test",
+    multipleStatements: true,
+  },
+  mysql_configs_prod: {
+    host: "mysql.default.svc.cluster.local:3306",
+    user: "admin",
+    password: "Abcd1234",
+    database: "coinbase_exchange_db_prod",
     multipleStatements: true,
   },
 };
