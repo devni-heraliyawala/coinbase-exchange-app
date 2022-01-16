@@ -22,5 +22,8 @@ spec:
         - image: devniindula/nodejs-coinbase-starter:1.0
           imagePullPolicy: Always
           name: coursework-20200681
+          env: 
+          - name: NODE_ENV
+            value: "dev"
           ports:
             - containerPort: 3000
