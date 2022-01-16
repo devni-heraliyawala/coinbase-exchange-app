@@ -30,7 +30,7 @@ module.exports = {
   mysql_configs_dev: {
     host: "mysql.default.svc.cluster.local",
     user: "root",
-    password: "Abcd1234",
+    password: "",
     database: "coinbase_exchange_db_dev",
     insecureAuth : true,
     flags: '-SECURE_CONNECTION',
