@@ -16,12 +16,15 @@ const client = new CoinbasePro(config.coinbase_auth_configs);
 // SQL connection
 var node_env = process.env.NODE_ENV
 var db_connection_configs = config["mysql_configs_" + node_env]
-
+console.log('db configs',db_connection_configs)
 var mysql_connection = mysql.createConnection(db_connection_configs);
 
 mysql_connection.connect((err) => {
   if (!err) console.log("Connection established successfully!");
-  else console.log("Connection failed!" + JSON.stringify(err, undefined, 2));
+  else {
+    console.log('err',err)
+    console.log("Connection failed!" + JSON.stringify(err, undefined, 2));
+  }
 });
 
 app.get("/", (req, res) => {
