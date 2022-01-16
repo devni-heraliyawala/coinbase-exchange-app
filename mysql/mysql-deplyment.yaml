@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      containers:
+        - name: mysql
+          image: mysql:8.0
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              value: Abcd1234
+          ports:
+            - containerPort: 3306
+              name: mysql
+          volumeMounts:
+            - name: mysql-vol1
+              mountPath: /var/lib/mysql
+            - name: mysql-vol2
+              mountPath: /docker-entrypoint-initdb.d
+      volumes:
+        - name: mysql-vol1
+          persistentVolumeClaim:
+            claimName: ebs-mysql-pv-claim
+        - name: mysql-vol2
+          configMap:
+            name: coinbase-exchange-db-script

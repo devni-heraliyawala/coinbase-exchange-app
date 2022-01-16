@@ -6,11 +6,26 @@ const AWS = require("aws-sdk");
 const config = require("./config/config.js");
 const { v4: uuidv4 } = require("uuid");
 var moment = require("moment");
+var mysql = require("mysql");
 
 const app = express();
 app.use(express.json());
 
 const client = new CoinbasePro(config.coinbase_auth_configs);
+
+// SQL connection
+var node_env = process.env.NODE_ENV
+var db_connection_configs = config["mysql_configs_" + node_env]
+console.log('db configs',db_connection_configs)
+var mysql_connection = mysql.createConnection(db_connection_configs);
+
+mysql_connection.connect((err) => {
+  if (!err) console.log("Connection established successfully!");
+  else {
+    console.log('err',err)
+    console.log("Connection failed!" + JSON.stringify(err, undefined, 2));
+  }
+});
 
 app.get("/", (req, res) => {
   client.rest.account.listAccounts().then((accounts) => {
@@ -56,52 +71,26 @@ app.post("/money/transfer", (req, res) => {
       to,
     })
     .then((transfer_details) => {
-      //insert to dynamo db : money transfer history
-      AWS.config.update(config.aws_remote_config);
-
+      //insert to db : money transfer history
       const history_id = uuidv4();
-      const docClient = new AWS.DynamoDB.DocumentClient();
+      var sql =
+        "INSERT INTO money_transfer_history(history_id,currency,from_account,to_account,amount) VALUES ?";
+      var values = [[history_id, currency, from, to, amount]];
 
-      const params = {
-        TableName: config.aws_table_name_money_transfer,
-        Item: {
-          History_Id: history_id,
-          From: from,
-          To: to,
-          Currency: currency,
-          Amount: amount,
-        },
-      };
-
-      docClient.put(params, function (err, data) {
-        if (err) {
-          console.log("aws err", err);
-          res.send({
-            success: false,
-            message: `Error: Server error. ${err?.message}`,
-          });
-        } else {
-          // insert data to activity log
+      mysql_connection.query(sql, [values], (err, rows, fields) => {
+        if (!err) {
+          // insert to db: activity logs
           const log_id = uuidv4();
-          const params = {
-            TableName: config.aws_table_name_activity_log,
-            Item: {
-              Log_Id: log_id,
-              Path: path,
-              Action: "fund-transfer",
-              Data: JSON.stringify(req.body),
-              Created_At: moment(new Date()).format("YYYY-MMM-DD hh:mm:ss"),
-            },
-          };
+          const action_type = "fund-transfer";
+          const created_at = moment(new Date()).format("YYYY-MMM-DD hh:mm:ss");
+          const data = JSON.stringify(req.body);
 
-          docClient.put(params, function (err, data) {
-            if (err) {
-              console.log("aws err", err);
-              res.send({
-                success: false,
-                message: `Error: Server error. ${err?.message}`,
-              });
-            } else {
+          var sql =
+            "INSERT INTO activity_log(log_id,action_type,created_at,data,path) VALUES ?";
+          var values = [[log_id, action_type, created_at, data, path]];
+
+          mysql_connection.query(sql, [values], (err, rows, fields) => {
+            if (!err) {
               res.send({
                 success: true,
                 message: `Successfully transferred money from account ${from} to account ${to}`,
@@ -109,7 +98,19 @@ app.post("/money/transfer", (req, res) => {
                 log_id,
                 ...req.body,
               });
+            } else {
+              console.log("Database error", err);
+              res.send({
+                success: false,
+                message: `Error: Server error. ${err?.message}`,
+              });
             }
+          });
+        } else {
+          console.log("Database error", err);
+          res.send({
+            success: false,
+            message: `Error: Server error. ${err?.message}`,
           });
         }
       });
@@ -122,29 +123,25 @@ app.post("/money/transfer", (req, res) => {
 
 app.post("/money/transfer/history", (req, res) => {
   const { profile_id } = req.body;
-  //read from dynamo db : money transfer history
-  AWS.config.update(config.aws_remote_config);
-  const docClient = new AWS.DynamoDB.DocumentClient();
-  
-  const params = {
-    TableName: config.aws_table_name_money_transfer
-  };
 
-  docClient.scan(params, function(err, data) {
-    if (err) {
-      res.send({
-        success: false,
-        message: `Error: Server error. ${err?.message}`
-      });
-    } else {
-      const { Items } = data;
-      res.send({
-        success: true,
-        message: `Loaded money transfer history by profile (${profile_id})`,
-        history: Items
-      });
+  mysql_connection.query(
+    "SELECT * FROM money_transfer_history",
+    (err, rows, fields) => {
+      if (!err) {
+        res.send({
+          success: true,
+          message: `Loaded money transfer history by profile (${profile_id})`,
+          history: rows,
+        });
+      } else {
+        console.log("Database error", err);
+        res.send({
+          success: false,
+          message: `Error: Server error. ${err?.message}`,
+        });
+      }
     }
-  });
+  );
 });
 
 app.get("/currency/list", (req, res) => {
@@ -161,7 +158,7 @@ app.get("/currency/list", (req, res) => {
 
 app.post("/order/place", (req, res) => {
   const { type, size, funds, product_id } = req.body;
-  const path = req.path
+  const path = req.path;
   //sample hardcoded product-ids = ["BTC-USD","BTC-GBP","ETH-USD","ETH-BTC","ETH-GBP","ETH-USDC","BTC-USDC"]
   client.rest.order
     .placeOrder({
@@ -172,37 +169,30 @@ app.post("/order/place", (req, res) => {
       side: "buy",
     })
     .then((order) => {
-      // insert data to activity log
-      AWS.config.update(config.aws_remote_config);
-      const docClient = new AWS.DynamoDB.DocumentClient();
-
+      // insert to db: activity logs
       const log_id = uuidv4();
+      const action_type = "order";
+      const created_at = moment(new Date()).format("YYYY-MMM-DD hh:mm:ss");
+      const data = JSON.stringify(req.body);
 
-      const params = {
-        TableName: config.aws_table_name_activity_log,
-        Item: {
-          Log_Id: log_id,
-          Path: path,
-          Action: "order",
-          Data: JSON.stringify(req.body),
-          Created_At: moment(new Date()).format("YYYY-MMM-DD hh:mm:ss"),
-        },
-      };
+      var sql =
+        "INSERT INTO activity_log(log_id,action_type,created_at,data,path) VALUES ?";
+      var values = [[log_id, action_type, created_at, data, path]];
 
-      docClient.put(params, function (err, data) {
-        if (err) {
-          console.log("aws err", err);
-          res.send({
-            success: false,
-            message: `Error: Server error. ${err?.message}`,
-          });
-        } else {
+      mysql_connection.query(sql, [values], (err, rows, fields) => {
+        if (!err) {
           res.send({
             success: true,
             message: `Successfully placed the order.`,
             log_id,
             ...req.body,
-            order
+            order,
+          });
+        } else {
+          console.log("Database error", err);
+          res.send({
+            success: false,
+            message: `Error: Server error. ${err?.message}`,
           });
         }
       });
@@ -229,39 +219,27 @@ app.get("/order/list", (req, res) => {
 });
 
 app.post("/history/activity-log", (req, res) => {
-  const {  type } = req.body; // type : order, fund-transfer
-  //read from dynamo db : activity log table
-  AWS.config.update(config.aws_remote_config);
-  const docClient = new AWS.DynamoDB.DocumentClient();
-  
-  const params = {
-    TableName: config.aws_table_name_activity_log,
-    FilterExpression: "#Action = :action_value",
-    ExpressionAttributeNames: {
-        "#Action": "Action",
-    },
-    ExpressionAttributeValues: { ":action_value": type}
-  };
-
-  docClient.scan(params, function(err, data) {
-    if (err) {
-      res.send({
-        success: false,
-        message: `Error: Server error. ${err?.message}`
-      });
-    } else {
-      const { Items } = data;
-      res.send({
-        success: true,
-        message: `Loaded activity logs by type ${type}`,
-        logs: Items
-      });
+  const { type } = req.body; // type : order, fund-transfer
+  //read from  db : activity log table
+  mysql_connection.query("SELECT * FROM activity_log WHERE action_type=?",[type],
+    (err, rows, fields) => {
+      if (!err) {
+        res.send({
+          success: true,
+          message: `Loaded activity logs by type ${type}`,
+          logs: rows,
+        });
+      } else {
+        console.log("Database error", err);
+        res.send({
+          success: false,
+          message: `Error: Server error. ${err?.message}`,
+        });
+      }
     }
-  });
+  );
 });
 
 app.listen(3000, function () {
   console.log("listening on 3000");
 });
-
-// test comment
