@@ -28,7 +28,7 @@ mysql_connection.connect((err) => {
 
 app.get("/", (req, res) => {
   client.rest.account.listAccounts().then((accounts) => {
-    const message = `You can trade(coinbase) new "${accounts.length}" different pairs.`;
+    const message = `You can trade(coinbase) "${accounts.length}" different pairs.`;
     console.log(message);
     res.send(message);
   });
