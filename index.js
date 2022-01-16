@@ -14,7 +14,7 @@ const client = new CoinbasePro(config.coinbase_auth_configs);
 
 app.get("/", (req, res) => {
   client.rest.account.listAccounts().then((accounts) => {
-    const message = `You can trade new "${accounts.length}" different pairs. `;
+    const message = `You can trade(coinbase) new "${accounts.length}" different pairs.`;
     console.log(message);
     res.send(message);
   });
