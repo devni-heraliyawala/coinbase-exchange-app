@@ -4,6 +4,9 @@ metadata:
   name: coinbase-exchange-db-script
 data:
   mysql_coinbase_exchange_db.sql: |-
+    CREATE USER 'cw_k8_user'@'%' IDENTIFIED WITH mysql_native_password BY 'Abcd1234';
+    GRANT ALL PRIVILEGES ON *.* TO 'cw_k8_user'@'%';
+    FLUSH PRIVILEGES;
     CREATE DATABASE IF NOT EXISTS coinbase_exchange_db_dev;
     USE coinbase_exchange_db_dev;
     CREATE TABLE money_transfer_history(
