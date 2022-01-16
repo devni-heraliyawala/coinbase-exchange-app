@@ -33,6 +33,7 @@ module.exports = {
     password: "Abcd1234",
     database: "coinbase_exchange_db_dev",
     insecureAuth : true,
+    flags: '-SECURE_CONNECTION',
     multipleStatements: true,
   },
   mysql_configs_test: {
