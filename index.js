@@ -16,20 +16,19 @@ const client = new CoinbasePro(config.coinbase_auth_configs);
 // SQL connection
 var node_env = process.env.NODE_ENV
 var db_connection_configs = config["mysql_configs_" + node_env]
-console.log('db configs',db_connection_configs)
+
 var mysql_connection = mysql.createConnection(db_connection_configs);
 
 mysql_connection.connect((err) => {
   if (!err) console.log("Connection established successfully!");
   else {
-    console.log('err',err)
     console.log("Connection failed!" + JSON.stringify(err, undefined, 2));
   }
 });
 
 app.get("/", (req, res) => {
   client.rest.account.listAccounts().then((accounts) => {
-    const message = `You can trade(coinbase) new "${accounts.length}" different pairs.`;
+    const message = `You can trade(coinbase) "${accounts.length}" different pairs.`;
     console.log(message);
     res.send(message);
   });
@@ -42,7 +41,7 @@ app.get("/accounts/list", (req, res) => {
       res.send(accounts);
     })
     .catch((error) => {
-      console.log("err", error);
+      console.log("Account listing failed!" + JSON.stringify(error, undefined, 2));
       res.send("Accounts listing failed. Please retry").status(400);
     });
 });
@@ -55,7 +54,7 @@ app.post("/transactions/list", (req, res) => {
       res.send(history);
     })
     .catch((error) => {
-      console.log("err", error);
+      console.log("Transactions listing failed!" + JSON.stringify(error, undefined, 2));
       res.send("Transactions listing failed. Please retry").status(400);
     });
 });
@@ -99,7 +98,7 @@ app.post("/money/transfer", (req, res) => {
                 ...req.body,
               });
             } else {
-              console.log("Database error", err);
+              console.log("Insert to activity logs failed!" + JSON.stringify(err, undefined, 2));
               res.send({
                 success: false,
                 message: `Error: Server error. ${err?.message}`,
@@ -107,7 +106,7 @@ app.post("/money/transfer", (req, res) => {
             }
           });
         } else {
-          console.log("Database error", err);
+          console.log("Insert to money transfer history failed!" + JSON.stringify(err, undefined, 2));
           res.send({
             success: false,
             message: `Error: Server error. ${err?.message}`,
@@ -116,7 +115,7 @@ app.post("/money/transfer", (req, res) => {
       });
     })
     .catch((error) => {
-      console.log("err", error);
+      console.log("Fund transfer failed(coinbase API)!" + JSON.stringify(error, undefined, 2));
       res.send("Fund transfer failed. Please retry").status(400);
     });
 });
@@ -134,7 +133,7 @@ app.post("/money/transfer/history", (req, res) => {
           history: rows,
         });
       } else {
-        console.log("Database error", err);
+        console.log("Data loading from money transfer history failed!" + JSON.stringify(err, undefined, 2));
         res.send({
           success: false,
           message: `Error: Server error. ${err?.message}`,
@@ -151,7 +150,7 @@ app.get("/currency/list", (req, res) => {
       res.send(currencies);
     })
     .catch((error) => {
-      console.log("err", error);
+      console.log("Currency listing failed!" + JSON.stringify(error, undefined, 2));
       res.send("Currency listing failed. Please retry").status(400);
     });
 });
@@ -189,7 +188,7 @@ app.post("/order/place", (req, res) => {
             order,
           });
         } else {
-          console.log("Database error", err);
+          console.log("Insert to activity logs failed!" + JSON.stringify(err, undefined, 2));
           res.send({
             success: false,
             message: `Error: Server error. ${err?.message}`,
@@ -198,7 +197,7 @@ app.post("/order/place", (req, res) => {
       });
     })
     .catch((error) => {
-      console.log("err", error);
+      console.log("Order placement failed(coinbase API)!" + JSON.stringify(error, undefined, 2));
       res.send("Order placement failed. Please retry").status(400);
     });
 });
@@ -213,7 +212,7 @@ app.get("/order/list", (req, res) => {
       res.send(orders);
     })
     .catch((error) => {
-      console.log("err", error);
+      console.log("Order listing failed!" + JSON.stringify(error, undefined, 2));
       res.send("Orders listing failed. Please retry").status(400);
     });
 });
@@ -230,7 +229,7 @@ app.post("/history/activity-log", (req, res) => {
           logs: rows,
         });
       } else {
-        console.log("Database error", err);
+        console.log("Data loading from activity logs failed" + JSON.stringify(err, undefined, 2));
         res.send({
           success: false,
           message: `Error: Server error. ${err?.message}`,
