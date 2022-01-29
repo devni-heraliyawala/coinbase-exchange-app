@@ -20,7 +20,7 @@ spec:
         role: blue
     spec:
       containers:
-        - image: devniindula/nodejs-coinbase-starter:1.6
+        - image: devniindula/nodejs-coinbase-starter:1.7
           imagePullPolicy: Always
           name: coursework-20200681
           env: 
