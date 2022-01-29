@@ -46,5 +46,22 @@ phases:
       - echo Pushing the Docker image...
       - docker push $REPOSITORY_URI:$IMAGE_TAG
       - echo Push the latest image to cluster
-      - kubectl apply -f $DEPLOYMENT_ENV/deployment.yaml
-      - kubectl rollout restart -f $DEPLOYMENT_ENV/deployment.yaml
+      - >-
+        if [ "$DEPLOYMENT_ENV" = "prod" ]; then 
+          BLUE_DEPLOYMENT_NAME="coursework-20200681-demo-blue";
+          GREEN_DEPLOYMENT_NAME="coursework-20200681-demo-green";
+          DEPLOYMENT_COLOR=$(kubectl get svc coursework-20200681-demo -o=jsonpath='{.spec.selector.app}' -n prod);
+          if [ "$DEPLOYMENT_COLOR" = "$BLUE_DEPLOYMENT_NAME" ]; then TARGET="green"; else TARGET="blue"; fi;
+          echo "Current deployment color - $DEPLOYMENT_COLOR";
+          echo "Target deployment color - $TARGET";
+          kubectl apply -f $DEPLOYMENT_ENV/deployment-$TARGET.yaml;
+          kubectl rollout restart -f $DEPLOYMENT_ENV/deployment-$TARGET.yaml;
+          kubectl apply -f $DEPLOYMENT_ENV/service-$TARGET.yaml;
+        else
+          kubectl apply -f $DEPLOYMENT_ENV/deployment.yaml;
+          kubectl rollout restart -f $DEPLOYMENT_ENV/deployment.yaml;
+        fi;
+
+
+
+
