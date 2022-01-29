@@ -11,7 +11,7 @@ metadata:
   namespace: prod
 spec:
   selector:
-    app: coursework-20200681-demo
+    app: coursework-20200681-demo-blue
   type: LoadBalancer
   ports:
     - protocol: TCP
