@@ -6,20 +6,21 @@ metadata:
     app.kubernetes.io/instance: coursework-20200681-demo-instance
     app.kubernetes.io/version: '1.0.0'
     app.kubernetes.io/managed-by: kubectl
-  name: coursework-20200681-demo-deployment
+  name: coursework-20200681-demo-deployment-blue
   namespace: prod
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: coursework-20200681-demo
+      app: coursework-20200681-demo-blue
   template:
     metadata:
       labels:
-        app: coursework-20200681-demo
+        app: coursework-20200681-demo-blue
+        role: blue
     spec:
       containers:
-        - image: devniindula/nodejs-coinbase-starter:1.0
+        - image: devniindula/nodejs-coinbase-starter:1.1
           imagePullPolicy: Always
           name: coursework-20200681
           env: 
