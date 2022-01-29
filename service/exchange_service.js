@@ -22,7 +22,7 @@ mysql_connection.connect((err) => {
 var exchange_service = {
   info: (req, res, next) => {
     client.rest.account.listAccounts().then((accounts) => {
-      const message = `You can trade new (coinbase) "${accounts.length}" different pairs. blue-green testing`;
+      const message = `You can trade new (coinbase) "${accounts.length}" different pairs. blue-green rollback testing`;
       console.log(message);
       res.send(message);
     });
